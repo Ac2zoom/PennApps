@@ -1,72 +1,25 @@
 package edu.drexel.cs.ptn32.pennapps;
 
-import android.content.Context;
-import android.database.Cursor;
-import android.net.Uri;
-import android.provider.ContactsContract;
-import android.telephony.TelephonyManager;
-
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * Created by PhucNgo on 1/22/16.
  */
 public class Runner {
-    public List<Person> getContactList(MainActivity mainActivity){
-        ArrayList<Person> contactList = new ArrayList<Person>();
+    public MainActivity mainActivity;
 
-        Uri contactUri = ContactsContract.Contacts.CONTENT_URI;
-        String[] PROJECTION = new String[] {
-                ContactsContract.Contacts._ID,
-                ContactsContract.Contacts.DISPLAY_NAME,
-                ContactsContract.Contacts.HAS_PHONE_NUMBER,
-        };
-        String SELECTION = ContactsContract.Contacts.HAS_PHONE_NUMBER + "='1'";
-        Cursor contacts = mainActivity.getApplicationContext().getContentResolver().query(ContactsContract.Contacts.CONTENT_URI, PROJECTION, SELECTION, null, null);
+    public Runner(MainActivity activity){
+        mainActivity = (MainActivity) activity;
+    }
 
+    public void Run() {
+        SensorAccelerometer sensorAccelerometer = new SensorAccelerometer(mainActivity.getApplicationContext());
 
-        if (contacts.getCount() > 0)
-        {
-            while(contacts.moveToNext()) {
-                Person aContact = new Person();
-                int idFieldColumnIndex = 0;
-                int nameFieldColumnIndex = 0;
-                int numberFieldColumnIndex = 0;
+        String curLat = MyLocationListener.getLat();
+        String curLong = MyLocationListener.getLon();
 
-                String contactId = contacts.getString(contacts.getColumnIndex(ContactsContract.Contacts._ID));
+        Contact contact = new Contact(mainActivity);
+        contact.getContactList();
 
-                nameFieldColumnIndex = contacts.getColumnIndex(ContactsContract.PhoneLookup.DISPLAY_NAME);
-                if (nameFieldColumnIndex > -1)
-                {
-                    aContact.setName(contacts.getString(nameFieldColumnIndex));
-                }
-
-                PROJECTION = new String[] {ContactsContract.CommonDataKinds.Phone.NUMBER};
-                final Cursor phone = mainActivity.getApplicationContext().getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, PROJECTION, ContactsContract.Data.CONTACT_ID + "=?", new String[]{String.valueOf(contactId)}, null);
-                if(phone.moveToFirst()) {
-                    while(!phone.isAfterLast())
-                    {
-                        numberFieldColumnIndex = phone.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER);
-                        if (numberFieldColumnIndex > -1)
-                        {
-                            aContact.setPhoneNum(phone.getString(numberFieldColumnIndex));
-                            phone.moveToNext();
-                            TelephonyManager mTelephonyMgr;
-                            mTelephonyMgr = (TelephonyManager) mainActivity.getApplicationContext().getSystemService(Context.TELEPHONY_SERVICE);
-                            if (!mTelephonyMgr.getLine1Number().contains(aContact.getPhoneNum()))
-                            {
-                                contactList.add(aContact);
-                            }
-                        }
-                    }
-                }
-                phone.close();
-            }
-
-            contacts.close();
-        }
-
-        return contactList;
+//        SMS sms = new SMS();
+//        sms.SendSMS("4136954636");
     }
 }

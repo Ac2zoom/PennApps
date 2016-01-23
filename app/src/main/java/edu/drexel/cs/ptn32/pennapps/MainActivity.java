@@ -1,5 +1,9 @@
 package edu.drexel.cs.ptn32.pennapps;
 
+import android.content.Context;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -10,6 +14,10 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 public class MainActivity extends AppCompatActivity {
+    public Runner runner = new Runner(this);
+    public Runner getRunner(){
+        return this.runner;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -17,6 +25,15 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        LocationManager locationManager = (LocationManager) getSystemService( Context.LOCATION_SERVICE );
+        if (!(locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER))) {
+            //AlertNoGPS alertNoGPS = new AlertNoGPS(this);
+            //alertNoGPS.buildAlertMessageNoGps();
+        }
+
+        LocationListener locationListener = new MyLocationListener(this);
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 10, locationListener);
 
 //        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
 //        fab.setOnClickListener(new View.OnClickListener() {
@@ -26,6 +43,7 @@ public class MainActivity extends AppCompatActivity {
 //                        .setAction("Action", null).show();
 //            }
 //        });
+        runner.Run();
     }
 
     @Override
@@ -48,5 +66,39 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+}
+
+//*---------- Listener class to get coordinates ------------- */
+class MyLocationListener implements LocationListener {
+    private MainActivity mainActivity;
+    private static String lon;
+    private static String lat;
+
+    public MyLocationListener (MainActivity mainActivity) {
+        this.mainActivity = mainActivity;
+    }
+
+    @Override
+    public void onLocationChanged(Location loc) {
+        lon = Double.toString(loc.getLongitude());
+        lat = Double.toString(loc.getLatitude());
+    }
+
+    @Override
+    public void onProviderDisabled(String provider) {}
+
+    @Override
+    public void onProviderEnabled(String provider) {}
+
+    @Override
+    public void onStatusChanged(String provider, int status, Bundle extras) {}
+
+    public static String getLon() {
+        return lon;
+    }
+
+    public static String getLat() {
+        return lat;
     }
 }
